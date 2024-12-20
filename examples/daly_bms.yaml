@@ -1,0 +1,277 @@
+substitutions:
+  node_name: d1mini
+  device_name: DalyBMS1
+
+esp8266:
+  board: d1_mini
+
+esphome:
+  name: $node_name
+  friendly_name: Wemos D1 Mini DalyBMS 1
+  comment: DalyBMS 1
+external_components:
+  - source: github://SirUlbrich/
+    components: [DalyBMS]
+logger:
+  level: WARN
+api:
+  password: !secret ha_api_key
+ota:
+  password: !secret ha_ota_pw
+wifi:
+  ssid: !secret wlan
+  password: !secret wlanpw
+  manual_ip:
+    static_ip: 192.168.178.158
+    gateway: 192.168.178.1
+    subnet: 255.255.255.0
+    dns1: 192.168.178.1
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32 Deye Fallback Hotspot"
+    password: "123456789"
+  reboot_timeout: 0s
+
+uart:
+  - id: uart_daly
+    tx_pin: GPIO22
+    rx_pin: GPIO21
+    baud_rate: 9600
+    rx_buffer_size: 256
+
+daly_bms:
+  - uart_id: uart_daly
+    id: bms1
+    update_interval: 20s
+    on_failure_status: 
+      - lambda: id(bms1_fehlercode).publish_state(x[7]);
+
+binary_sensor:
+  - platform: daly_bms
+    bms_daly_id: bms1
+    charging_mos_enabled:
+      name: "${device_name} - BMS Laden MOS"
+    discharging_mos_enabled:
+      name: "${device_name} - BMS Entladen MOS"
+    cell_1_balance_active:
+      name: "${device_name} - Zelle 1 Balance"
+    cell_2_balance_active:
+      name: "${device_name} - Zelle 2 Balance"
+    cell_3_balance_active:
+      name: "${device_name} - Zelle 3 Balance"
+    cell_4_balance_active:
+      name: "${device_name} - Zelle 4 Balance"
+    cell_5_balance_active:
+      name: "${device_name} - Zelle 5 Balance"
+    cell_6_balance_active:
+      name: "${device_name} - Zelle 6 Balance"
+    cell_7_balance_active:
+      name: "${device_name} - Zelle 7 Balance"
+    cell_8_balance_active:
+      name: "${device_name} - Zelle 8 Balance"
+    cell_9_balance_active:
+      name: "${device_name} - Zelle 9 Balance"
+    cell_10_balance_active:
+      name: "${device_name} - Zelle 10 Balance"
+    cell_11_balance_active:
+      name: "${device_name} - Zelle 11 Balance"
+    cell_12_balance_active:
+      name: "${device_name} - Zelle 12 Balance"
+    cell_13_balance_active:
+      name: "${device_name} - Zelle 13 Balance"
+    cell_14_balance_active:
+      name: "${device_name} - Zelle 14 Balance"
+    cell_15_balance_active:
+      name: "${device_name} - Zelle 15 Balance"
+    cell_16_balance_active:
+      name: "${device_name} - Zelle 16 Balance"
+text_sensor:
+  - platform: daly_bms
+    bms_daly_id: bms1
+    status:
+      name: "${device_name} - Status"
+sensor:
+  - platform: wifi_signal # Reports the WiFi signal strength/RSSI in dB
+    name: "${device_name} - WiFi Signal dB"
+    id: wifi_signal_db
+    update_interval: 60s
+    entity_category: "diagnostic"
+  - platform: copy # Reports the WiFi signal strength in %
+    source_id: wifi_signal_db
+    name: "${device_name} - WiFi Signal in Prozent"
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
+    unit_of_measurement: "Signal %"
+    entity_category: "diagnostic"
+  - platform: template
+    id: bms1_fehlercode
+    name: "${device_name} - fehlercode"
+    accuracy_decimals: 0
+  - platform: daly_bms
+    bms_daly_id: bms1
+    remaining_capacity:
+      name: "${device_name} - Kapazitaet-Speicher"
+      unit_of_measurement: Ah
+      state_class: "measurement"
+    cells_number:
+      name: "${device_name} - Zellenanzahl-Speicher"
+    voltage:
+      name: "${device_name} - Gesamtspannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    current:
+      name: "${device_name} - Strom-Speicher"
+      unit_of_measurement: A
+      state_class: "measurement"
+    power:
+      name: "${device_name} - Power"
+      unit_of_measurement: W
+      state_class: "measurement"
+    battery_level:
+      name: "${device_name} - SOC-Speicher"
+      unit_of_measurement: '%'
+      state_class: "measurement"
+    cycle:
+      name: "${device_name} - BMS-Zyklen"
+      state_class: "measurement"
+    bms_watchdog:
+      name: "${device_name} - BMS-Watchdog"
+      state_class: "measurement"
+    max_temperature:
+      name: "${device_name} - Temperatur Max-Speicher"
+      unit_of_measurement: °C
+      state_class: "measurement"
+    max_temperature_probe_number:
+      name: "${device_name} - Temperaturfühler Max-Speicher"
+      unit_of_measurement: °C
+      state_class: "measurement"
+    min_temperature:
+      name: "${device_name} - Temperatur Min-Speicher"
+      unit_of_measurement: °C
+      state_class: "measurement"
+    min_temperature_probe_number:
+      name: "${device_name} - Temperaturfühler Min-Speicher"
+      unit_of_measurement: °C
+      state_class: "measurement"
+    temperature_1:
+      name: "${device_name} - Zellentemperatur 1-Speicher"
+      unit_of_measurement: °C
+      state_class: "measurement"
+    temperature_2:
+      name: "${device_name} - Zellentemperatur 2-Speicher"
+      unit_of_measurement: °C
+      state_class: "measurement"
+    max_cell_voltage:
+      name: "${device_name} - Zellenspannung Max-Speicher"
+      unit_of_measurement: V
+      state_class: "measurement"
+      accuracy_decimals: "3"
+    max_cell_voltage_number:
+      name: "${device_name} - Zelle Zellenspannung Max-Speicher"
+      state_class: "measurement"
+    min_cell_voltage:
+      name: "${device_name} - Zellenspannung Min-Speicher"
+      unit_of_measurement: V
+      state_class: "measurement"
+      accuracy_decimals: "3"
+    min_cell_voltage_number:
+      name: "${device_name} - Zelle Zellenspannung Min-Speicher"
+      state_class: "measurement"
+    cell_1_voltage:
+      name: "${device_name} - Zelle 1 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_2_voltage:
+      name: "${device_name} - Zelle 2 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_3_voltage:
+      name: "${device_name} - Zelle 3 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_4_voltage:
+      name: "${device_name} - Zelle 4 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_5_voltage:
+      name: "${device_name} - Zelle 5 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_6_voltage:
+      name: "${device_name} - Zelle 6 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_7_voltage:
+      name: "${device_name} - Zelle 7 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_8_voltage:
+      name: "${device_name} - Zelle 8 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_9_voltage:
+      name: "${device_name} - Zelle 9 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_10_voltage:
+      name: "${device_name} - Zelle 10 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_11_voltage:
+      name: "${device_name} - Zelle 11 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_12_voltage:
+      name: "${device_name} - Zelle 12 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_13_voltage:
+      name: "${device_name} - Zelle 13 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_14_voltage:
+      name: "${device_name} - Zelle 14 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_15_voltage:
+      name: "${device_name} - Zelle 15 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_16_voltage:
+      name: "${device_name} - Zelle 16 Spannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+    cell_voltage_difference:
+      name: "${device_name} - Differenz Zellenspannung"
+      unit_of_measurement: V
+      state_class: "measurement"
+      accuracy_decimals: "3"
+    # eingestellte werte
+    cell_level_1_alarm_high_voltage:
+      name: "${device_name} - Warnung Zellenspannung zu hoch"
+    cell_level_2_alarm_high_voltage:
+      name: "${device_name} - Alarm Zellenspannung zu hoch"
+    cell_level_1_alarm_low_voltage:
+      name: "${device_name} - Warnung Zellenspannung zu gering"
+    cell_level_2_alarm_low_voltage:
+      name: "${device_name} - Alarm Zellenspannung zu gering"
+    battpack_level_1_alarm_high_voltage:
+      name: "${device_name} - Warnung Battpackspannung zu hoch"
+    battpack_level_2_alarm_high_voltage:
+      name: "${device_name} - Alarm Battpackspannung zu hoch"
+    battpack_level_1_alarm_low_voltage:
+      name: "${device_name} - Warnung Battpackspannung zu gering"
+    battpack_level_2_alarm_low_voltage:
+      name: "${device_name} - Alarm Battpackspannung zu gering"
+    cell_level_1_alarm_difference_temperature:
+      name: "${device_name} - Warnung Temperaturdifferenz"
+    cell_level_2_alarm_difference_temperature:
+      name: "${device_name} - Alarm Temperaturdifferenz"
+    cell_level_1_alarm_difference_voltage:
+      name: "${device_name} - Warnung Spannungsdifferenz"
+    cell_level_2_alarm_difference_voltage:
+      name: "${device_name} - Alarm Spannungsdifferenz"
+    cell_nominal_capacity:
+      name: "${device_name} - nominale Kapazitt pro Zelle"
+    cell_nominal_voltage:
+      name: "${device_name} - nominale Spannung pro Zelle"
