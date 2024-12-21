@@ -27,7 +27,7 @@ CONFIG_SCHEMA = (
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(DalyBmsComponent),
-            cv.Optional(CONF_ADDRESS, default=0x1): cv.positive_int,
+            cv.Optional(CONF_ADDRESS, default=0x80): cv.positive_int,
             cv.Optional(CONF_ON_FAILURE_STATUS): automation.validate_automation(
                 {
                     cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(DalyOnFailureStatus),
