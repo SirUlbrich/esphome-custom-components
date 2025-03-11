@@ -20,7 +20,35 @@ seplos_parser:
   bms_count: 2  # Anzahl der Akku's (max. 16)
   update_interval: ${time}
   uart_id: seplos  # SeplosParser verwendet diese UART ID
-  
+
+esphome:
+  name: seplos_d1_mini
+  friendly_name: Wemos D1 Mini Seplos
+  comment: Seplos BMS
+
+logger:
+  level: WARN
+
+api:
+  password: !secret ha_api_key
+
+ota:
+  password: !secret ha_ota_pw
+
+wifi:
+  ssid: !secret wlan
+  password: !secret wlanpw
+  manual_ip:
+    static_ip: 192.168.178.161
+    gateway: 192.168.178.1
+    subnet: 255.255.255.0
+    dns1: 192.168.178.1
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Wemos Seplos Fallback Hotspot"
+    password: "123456789"
+  reboot_timeout: 0s
+
 sensor:
  # bms0
   - platform: seplos_parser
